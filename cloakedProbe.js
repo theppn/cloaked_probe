@@ -12,11 +12,11 @@
 var nPerfUrl = 'https://www.nperf.com/fr/'; // url of nPerf
 var username = ''; // your nPerf account username
 var password = ''; // your nPerf account password
-var maxLoop = 48; // number of tests to perform
-var intervalBetweenTest = 3600; // waiting time between each test in sec
-var maxPageLoadingDuration = 60; // waiting time of page loading before timeout in sec
-var maxTestDuration = 90; // waiting time of test duration before timeout in sec
-var verbose = false; // log verbosely
+var maxLoop = 4*24*7; // number of tests to perform
+var intervalBetweenTest = 15*60; // waiting time between each test in sec
+var maxPageLoadingDuration = 2*60; // waiting time of page loading before timeout in sec
+var maxTestDuration = 3*60; // waiting time of test duration before timeout in sec
+var verbose = true; // log verbosely
 var logLevel = 'debug'; // log level ie. debug, info, warning, error
 
 /**
@@ -93,13 +93,13 @@ cloakedProbe.launchTest = function() {
     this.waitForSelector(cloakedProbe.buffer.targetStart, function() {
         if (cloakedProbe.buffer.loop < cloakedProbe.settings.maxLoop) {
             this.waitUntilVisible(cloakedProbe.buffer.targetStart, function() {
-                cloakedProbe.buffer.loop = cloakedProbe.buffer.loop + 1;
                 this.click(cloakedProbe.buffer.targetStart);
-                cloakedProbe.log('cloakedProbe.launchTest: loop #' + (cloakedProbe.buffer.loop-1) + ' started');
+                cloakedProbe.log('cloakedProbe.launchTest: loop #' + cloakedProbe.buffer.loop + ' started');
                 // 2 sec temp as safety dance
                 this.wait(2000, function() {
                     this.waitUntilVisible(cloakedProbe.buffer.targetRestart, function() {
-                        cloakedProbe.log('cloakedProbe.launchTest: loop #' + (cloakedProbe.buffer.loop-1) + ' ended');
+                        cloakedProbe.log('cloakedProbe.launchTest: loop #' + cloakedProbe.buffer.loop + ' ended');
+                        cloakedProbe.buffer.loop = cloakedProbe.buffer.loop + 1;
                         // wait for restart button instead of start from loop 1 onwards
                         cloakedProbe.buffer.targetStart = ".gaugeRestartButton";
                         cloakedProbe.log('cloakedProbe.launchTest: pause, waiting cloakedProbe.settings.intervalBetweenTest = ' + cloakedProbe.settings.intervalBetweenTest/1000 + "sec" );
@@ -109,12 +109,12 @@ cloakedProbe.launchTest = function() {
                         }.bind(this));
                     }.bind(this), function() {
                         cloakedProbe.log('cloakedProbe.launchTest: maxTestDuration reached, test took too long');
-                        this.exit();
+                        cloakedProbe.rerun();
                     }, cloakedProbe.settings.maxTestDuration);
                 });
             }, function() {
                 cloakedProbe.log("cloakedProbe.launchTest: maxPageLoadingDuration reached, can't find " + cloakedProbe.buffer.targetStart + ", timeout");
-                this.exit();
+                cloakedProbe.rerun();
             }, cloakedProbe.settings.maxPageLoadingDuration);
         }
         else {
@@ -124,7 +124,34 @@ cloakedProbe.launchTest = function() {
     },
     function() {
         cloakedProbe.log("cloakedProbe.launchTest: maxPageLoadingDuration reached, can't find " + cloakedProbe.buffer.targetStart + ", timeout");
-        this.exit();
+        cloakedProbe.rerun();
+    }, cloakedProbe.settings.maxPageLoadingDuration);
+};
+
+/**
+ * Logout if necessary
+ */
+cloakedProbe.logout = function() {
+    cloakedProbe.log('cloakedProbe.logout: start');
+    this.waitForSelector('#userMenu', function() {
+        // if currently logged in, attempt to logout
+        if (this.exists('.userIdentity')) {
+            cloakedProbe.log('cloakedProbe.logout: currently logged in, attempt to logout');
+            this.evaluate(function () {
+                userLogout();
+            });
+            this.waitForSelector('.notyfy_success', function () {
+                cloakedProbe.log('cloakedProbe.logout: logout success');
+            }, function () {
+                cloakedProbe.log('cloakedProbe.logout: logout failure');
+            }, cloakedProbe.settings.maxPageLoadingDuration);
+        }
+        else {
+            cloakedProbe.log('cloakedProbe.logout: not logged in, skip');
+        }
+    }, function() {
+        cloakedProbe.log('cloakedProbe.logout: #userMenu not found');
+        cloakedProbe.rerun();
     }, cloakedProbe.settings.maxPageLoadingDuration);
 };
 
@@ -151,25 +178,19 @@ cloakedProbe.login = function() {
                 nPerfModal.Login.authenticate(document.querySelector('.login-authenticate'));
             });
             // waiting for notification post login attempt
-            this.waitForSelector('#notyfy_container_center', function() {
-                if (this.exists('.notyfy_success')) {
-                    cloakedProbe.log('cloakedProbe.login: auth success');
-                }
-                else {
-                    cloakedProbe.log('cloakedProbe.login: auth error');
-                    this.exit();
-                }
+            this.waitForSelector('.notyfy_success', function() {
+                cloakedProbe.log('cloakedProbe.login: auth success');
             }, function() {
                 cloakedProbe.log('cloakedProbe.login: auth failure');
-                this.exit();
+                cloakedProbe.rerun();
             }, cloakedProbe.settings.maxPageLoadingDuration);
         }, function() {
             cloakedProbe.log('cloakedProbe.login: input[name="identity"] NOT found');
-            this.exit();
+            cloakedProbe.rerun();
         }, cloakedProbe.settings.maxPageLoadingDuration);
     }, function() {
         cloakedProbe.log('cloakedProbe.login: .toolBar.borderL2.borderR2 NOT found');
-        this.exit();
+        cloakedProbe.rerun();
     }, cloakedProbe.settings.maxPageLoadingDuration);
 };
 
@@ -202,13 +223,33 @@ cloakedProbe.loadTest = function() {
 cloakedProbe.run = function (nPerfUrl, username, password, maxLoop, intervalBetweenTest, maxPageLoadingDuration, maxTestDuration, verbose, logLevel) {
     cloakedProbe.init(username, password, maxLoop, intervalBetweenTest, maxPageLoadingDuration, maxTestDuration, verbose, logLevel);
     casper.start(nPerfUrl);
+    casper.then(cloakedProbe.logout);
+    // 5 sec temp as safety dance
+    casper.wait(5000);
     casper.then(cloakedProbe.login);
     // 5 sec temp as safety dance
     casper.wait(5000);
     casper.then(cloakedProbe.loadTest);
     casper.then(cloakedProbe.launchTest);
-    casper.run();
 };
+
+/**
+ * Runs again
+ */
+cloakedProbe.rerun = function() {
+    cloakedProbe.buffer.targetStart = ".gaugeStartButton";
+    cloakedProbe.log("cloakedProbe.rerun: start");
+    casper.open(nPerfUrl);
+    casper.then(cloakedProbe.logout);
+    // 5 sec temp as safety dance
+    casper.wait(5000);
+    casper.then(cloakedProbe.login);
+    // 5 sec temp as safety dance
+    casper.wait(5000);
+    casper.then(cloakedProbe.loadTest);
+    casper.then(cloakedProbe.launchTest);
+}
 
 /* Run Forest, run! */
 cloakedProbe.run(nPerfUrl, username, password, maxLoop, intervalBetweenTest, maxPageLoadingDuration, maxTestDuration, verbose, logLevel);
+casper.run();
