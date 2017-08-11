@@ -13,7 +13,7 @@ AP_SSID='_SNCF gare-gratuit'
 # Password of access point to test, leave empty if no password
 AP_PWD=''
 # Number of retry before giving up
-RETRY=2
+RETRY=3
 
 # Functions here
 # Logs with timestamp
@@ -27,9 +27,9 @@ function log {
 function isApReachable {
     log "isApReachable start"
     COUNT=$(iwlist "$W_ITF_NAME" scan | grep ESSID | grep -c "$AP_SSID")
-    log "$COUNT matching APs found"
     if (( COUNT > 0 ))
     then
+        log "$COUNT matching APs found"
         echo 0
     else
         log "No matching AP found"
@@ -124,7 +124,7 @@ function run {
             exit
         else
             AP_REACHABLE_TEST=$(isApReachable)
-            if (( AP_REACHABLE_TEST < 0 ))
+            if (( AP_REACHABLE_TEST < 1 ))
             then
                 connectToAp
                 isConnectionWorking
