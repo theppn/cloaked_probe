@@ -66,8 +66,8 @@ function isItfUp {
 function isConnectionWorking {
     log "isConnectionWorking start"
     # Pings 2 times to check connection is working
-    PING_TEST=$(ping -c2 "$SERVER" > /dev/null)
-    if (( PING_TEST != 0 ))
+    ping -c2 "$SERVER" > /dev/null
+    if (( $? != 0 ))
     then
         log "Ping failed, connection is down"
         echo 1
@@ -161,5 +161,7 @@ function run {
         fi
     fi
 }
+
+function
 
 run
