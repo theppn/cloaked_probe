@@ -18,17 +18,17 @@ RETRY=2
 # Functions here
 # Logs with timestamp
 function log {
-    DATE=`date +%Y-%m-%d:%H:%M:%S`
-    echo "[$DATE]\: $1" >> $LOG
+    DATE=$(date +%Y-%m-%d:%H:%M:%S)
+    echo "[$DATE]\\: $1" >> $LOG
 }
 
 # Checks if AP is reachable
 # Returns 0 on success, 1 on failure
 function isApReachable {
     log "isApReachable start"
-    COUNT=iwlist "$W_ITF_NAME" scan | grep ESSID | grep "$AP_SSID" | wc -l
+    COUNT=iwlist "$W_ITF_NAME" scan | grep ESSID | grep -c "$AP_SSID"
     log "$COUNT matching APs found"
-    if (( $COUNT > 0 ))
+    if (( COUNT > 0 ))
     then
         return 0
     else
@@ -41,13 +41,13 @@ function isApReachable {
 # Returns 0 on success, 1 if no interface, 2 if no connection
 function isConnectionWorking {
     log "isConnectionWorking start"
-    TEST1=`ifconfig | grep "$W_ITF_NAME" | wc -l
-    if (( $TEST1 < 1 ))
+    TEST1=$(ifconfig | grep -c "$W_ITF_NAME")
+    if (( TEST1 < 1 ))
     then
         log "Interface $W_ITF_NAME not found or down, attempt to turn it on"
         ifconfig "$W_ITF_NAME" up
-        TEST2=`ifconfig | grep "$W_ITF_NAME" | wc -l
-        if (( $TEST2 < 1 ))
+        TEST2=$(ifconfig | grep -c "$W_ITF_NAME")
+        if (( TEST2 < 1 ))
         then
             log "Interface $W_ITF_NAME not found or still down"
             return 1
@@ -59,8 +59,8 @@ function isConnectionWorking {
     fi
     dhclient $W_ITF_NAME
     # Pings 3 times to check connection is working
-    ping -c3 "$SERVER" > /dev/null
-    if [ $? != 0 ]
+    PING_TEST=$(ping -c3 "$SERVER" > /dev/null)
+    if (( PING_TEST != 0 ))
     then
         log "Ping failed, connection is down"
         return 2
@@ -74,7 +74,7 @@ function isConnectionWorking {
 # Returns 0 on success, 1 if wrong AP
 function isConnectedToAp {
     log "isConnectedToAp start"
-    AP_SSID_CONNECTED=`iwconfig "$W_ITF_NAME" | grep -Eo "Access Point\: .*" | awk -F": " '{ print $2}'`
+    AP_SSID_CONNECTED=$(iwconfig "$W_ITF_NAME" | grep -Eo "Access Point\\: .*" | awk -F": " '{ print $2}')
     if [ "$AP_SSID_CONNECTED" == "$AP_SSID" ]
     then
         log "Connected to $AP_SSID_CONNECTED, OK"
@@ -89,7 +89,7 @@ function connectToAp {
     log "connectToAp start"
     if [ "$AP_MODE" = "WEP" ]
     then
-        if [ "$AP_PWD" = ""]
+        if [ "$AP_PWD" = "" ]
         then
             iwconfig $W_ITF_NAME essid \'"$AP_SSID"\'
             dhclient $W_ITF_NAME
@@ -98,7 +98,7 @@ function connectToAp {
             dhclient $W_ITF_NAME
         fi
     else
-        wpa_supplicant -B -i $W_ITF_NAME -c <(wpa_passphrase \'$AP_SSID\' $AP_PWD)
+        wpa_supplicant -B -i $W_ITF_NAME -c <(wpa_passphrase \'"$AP_SSID"\' $AP_PWD)
         dhclient $W_ITF_NAME
     fi
 }
@@ -106,20 +106,20 @@ function connectToAp {
 # Controller here
 function run {
     log "run start"
-    CONNECTION_TEST=isConnectionWorking
-    if (( $CONNECTION_TEST = 0 ))
+    CONNECTION_TEST=$(isConnectionWorking)
+    if (( CONNECTION_TEST == 0 ))
     then
-        AP_TEST=isConnectedToAp
-        if (( $AP_TEST = 0 ))
+        AP_TEST=$(isConnectedToAp)
+        if (( AP_TEST == 0 ))
         then
             # Success
             log "run success"
             exit
         else
-            AP_REACHABLE_TEST=isApReachable
-            if (( $AP_REACHABLE_TEST = 0 ))
+            AP_REACHABLE_TEST=$(isApReachable)
+            if (( AP_REACHABLE_TEST == 0 ))
             then
-                if (( $RETRY > 0 ))
+                if (( RETRY > 0 ))
                 then
                     connectToAp
                     (( RETRY-- ))
@@ -129,7 +129,7 @@ function run {
                     exit
                 fi
             else
-                if (( $RETRY > 0 ))
+                if (( RETRY > 0 ))
                 then
                     (( RETRY-- ))
                     log "run restart"
@@ -140,7 +140,7 @@ function run {
             fi
         fi
     else
-        if (( $RETRY > 0 ))
+        if (( RETRY > 0 ))
         then
             (( RETRY-- ))
             log "run restart"
