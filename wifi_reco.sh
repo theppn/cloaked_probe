@@ -115,16 +115,16 @@ function connectToAp {
 function run {
     log "run start"
     ITF_TEST=$(isItfUp)
-    if [[ $ITF_TEST -eq 0 ]]
+    if (( ITF_TEST < 1 ))
     then
         AP_TEST=$(isConnectedToAp)
-        if [[ $AP_TEST -eq 0 ]]
+        if (( AP_TEST < 1 ))
         then
             log "run success"
             exit
         else
             AP_REACHABLE_TEST=$(isApReachable)
-            if [[ $AP_REACHABLE_TEST -eq 0 ]]
+            if (( AP_REACHABLE_TEST < 0 ))
             then
                 connectToAp
                 isConnectionWorking
