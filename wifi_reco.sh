@@ -30,10 +30,10 @@ function isApReachable {
     log "$COUNT matching APs found"
     if (( COUNT > 0 ))
     then
-        return 0
+        echo 0
     else
         log "No matching AP found"
-        return 1
+        echo 1
     fi
 }
 
@@ -50,14 +50,14 @@ function isItfUp {
         if (( TEST_ITF2 < 1 ))
         then
             log "Interface $W_ITF_NAME not found or still down"
-            return 1
+            echo 1
         else
             log "Interface $W_ITF_NAME is up"
-            return 0
+            echo 0
         fi
     else
         log "Interface $W_ITF_NAME is up"
-        return 0
+        echo 0
     fi
 }
 
@@ -70,10 +70,10 @@ function isConnectionWorking {
     if (( PING_TEST != 0 ))
     then
         log "Ping failed, connection is down"
-        return 1
+        echo 1
     else
         log "Ping succeeded, connection is up"
-        return 0
+        echo 0
     fi
 }
 
@@ -85,10 +85,10 @@ function isConnectedToAp {
     if [ "$AP_SSID_CONNECTED" == "$AP_SSID" ]
     then
         log "Connected to $AP_SSID_CONNECTED, OK"
-        return 0
+        echo 0
     else
         log "Connected to $AP_SSID_CONNECTED instead of $AP_SSID, NOK"
-        return 1
+        echo 1
     fi
 }
 
