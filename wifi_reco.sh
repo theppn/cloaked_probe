@@ -65,8 +65,8 @@ function isItfUp {
 # Returns 0 on success, 1 otherwise
 function isConnectionWorking {
     log "isConnectionWorking start"
-    # Pings 3 times to check connection is working
-    PING_TEST=$(ping -c3 "$SERVER" > /dev/null)
+    # Pings 2 times to check connection is working
+    PING_TEST=$(ping -c2 "$SERVER" > /dev/null)
     if (( PING_TEST != 0 ))
     then
         log "Ping failed, connection is down"
@@ -95,17 +95,20 @@ function isConnectedToAp {
 # Connects to AP
 function connectToAp {
     log "connectToAp start"
-    if [ "$AP_MODE" = "WEP" ]
+    if [ "$AP_MODE" == "WEP" ]
     then
-        if [ "$AP_PWD" = "" ]
+        if [ "$AP_PWD" == "" ]
         then
+            log "Attempt via $W_ITF_NAME connection to $AP_SSID with no password"
             iwconfig $W_ITF_NAME essid \'"$AP_SSID"\'
             dhclient $W_ITF_NAME
         else
+            log "Attempt via $W_ITF_NAME connection to $AP_SSID with WEP password"
             iwconfig $W_ITF_NAME essid \'"$AP_SSID"\' key s:$AP_PWD
             dhclient $W_ITF_NAME
         fi
     else
+        log "Attempt via $W_ITF_NAME connection to $AP_SSID with WPA password"
         wpa_supplicant -B -i $W_ITF_NAME -c <(wpa_passphrase \'"$AP_SSID"\' $AP_PWD)
         dhclient $W_ITF_NAME
     fi
