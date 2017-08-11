@@ -152,5 +152,4 @@ function run {
     fi
 }
 
-
-
+run
