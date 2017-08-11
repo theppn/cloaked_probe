@@ -26,7 +26,7 @@ function log {
 # Returns 0 on success, 1 on failure
 function isApReachable {
     log "isApReachable start"
-    COUNT=iwlist "$W_ITF_NAME" scan | grep ESSID | grep -c "$AP_SSID"
+    COUNT=$(iwlist "$W_ITF_NAME" scan | grep ESSID | grep -c "$AP_SSID")
     log "$COUNT matching APs found"
     if (( COUNT > 0 ))
     then
