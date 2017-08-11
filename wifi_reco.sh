@@ -1,7 +1,7 @@
 #!/bin/bash
 # Settings below
 # Path to log file
-LOG='/var/log/wifi_reco.log'
+LOG='/var/log/cloakedProbe.log'
 # Server to ping for connection test
 SERVER='nperf.com'
 # Name of wireless interface to test
@@ -121,7 +121,7 @@ function run {
         if (( AP_TEST < 1 ))
         then
             log "run success"
-            exit
+            exit 0
         else
             AP_REACHABLE_TEST=$(isApReachable)
             if (( AP_REACHABLE_TEST < 1 ))
@@ -146,7 +146,7 @@ function rerun {
         run
     else
         log "max retry reached"
-        exit
+        exit 1
     fi
 }
 
