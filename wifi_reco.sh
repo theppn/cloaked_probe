@@ -100,16 +100,16 @@ function connectToAp {
         if [ "$AP_PWD" == "" ]
         then
             log "Attempt via $W_ITF_NAME connection to $AP_SSID with no password"
-            iwconfig $W_ITF_NAME essid \'"$AP_SSID"\'
+            iwconfig $W_ITF_NAME essid \""$AP_SSID"\"
             dhclient $W_ITF_NAME
         else
             log "Attempt via $W_ITF_NAME connection to $AP_SSID with WEP password"
-            iwconfig $W_ITF_NAME essid \'"$AP_SSID"\' key s:$AP_PWD
+            iwconfig $W_ITF_NAME essid \""$AP_SSID"\" key s:$AP_PWD
             dhclient $W_ITF_NAME
         fi
     else
         log "Attempt via $W_ITF_NAME connection to $AP_SSID with WPA password"
-        wpa_supplicant -B -i $W_ITF_NAME -c <(wpa_passphrase \'"$AP_SSID"\' $AP_PWD)
+        wpa_supplicant -B -i $W_ITF_NAME -c <(wpa_passphrase \""$AP_SSID"\" $AP_PWD)
         dhclient $W_ITF_NAME
     fi
 }
@@ -131,37 +131,26 @@ function run {
             then
                 connectToAp
                 isConnectionWorking
-                if (( RETRY > 0 ))
-                then
-                    (( RETRY-- ))
-                    log "run restart"
-                    run
-                else
-                    exit
-                fi
+                rerun
             else
-                if (( RETRY > 0 ))
-                then
-                    (( RETRY-- ))
-                    log "run restart"
-                    run
-                else
-                    exit
-                fi
+                rerun
             fi
         fi
     else
-        if (( RETRY > 0 ))
-        then
-            (( RETRY-- ))
-            log "run restart"
-            run
-        else
-            exit
-        fi
+        rerun
     fi
 }
 
-function
+function rerun {
+    if (( RETRY > 0 ))
+    then
+        (( RETRY-- ))
+        log "rerun start"
+        run
+    else
+        log "max retry reached"
+        exit
+    fi
+}
 
 run
