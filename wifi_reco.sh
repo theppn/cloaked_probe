@@ -74,10 +74,11 @@ function isConnectionWorking {
 # Returns 0 on success, 1 if wrong AP
 function isConnectedToAp {
     log "isConnectedToAp start"
-    AP_SSID_CONNECTED=$(iwconfig "$W_ITF_NAME" | grep -Eo "Access Point\\: .*" | awk -F": " '{ print $2}')
+    AP_SSID_CONNECTED=$(iwconfig "$W_ITF_NAME" | grep -Eo ESSID\\: .*" | awk -F": " '{ print $2}')
     if [ "$AP_SSID_CONNECTED" == "$AP_SSID" ]
     then
         log "Connected to $AP_SSID_CONNECTED, OK"
+        return 0
      else
         log "Connected to $AP_SSID_CONNECTED instead of $AP_SSID, NOK"
         return 1
