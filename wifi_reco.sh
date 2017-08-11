@@ -37,33 +37,40 @@ function isApReachable {
     fi
 }
 
-# Checks if current connection is working
-# Returns 0 on success, 1 if no interface, 2 if no connection
-function isConnectionWorking {
-    log "isConnectionWorking start"
-    TEST1=$(ifconfig | grep -c "$W_ITF_NAME")
-    if (( TEST1 < 1 ))
+# Checks if interface is up
+# Returns 0 on success, 1 otherwise
+function isItfUp {
+    log "isItfUp start"
+    TEST_ITF1=$(ifconfig | grep -c "$W_ITF_NAME")
+    if (( TEST_ITF1 < 1 ))
     then
         log "Interface $W_ITF_NAME not found or down, attempt to turn it on"
         ifconfig "$W_ITF_NAME" up
-        TEST2=$(ifconfig | grep -c "$W_ITF_NAME")
-        if (( TEST2 < 1 ))
+        TEST_ITF2=$(ifconfig | grep -c "$W_ITF_NAME")
+        if (( TEST_ITF2 < 1 ))
         then
             log "Interface $W_ITF_NAME not found or still down"
             return 1
         else
             log "Interface $W_ITF_NAME is up"
+            return 0
         fi
     else
         log "Interface $W_ITF_NAME is up"
+        return 0
     fi
-    dhclient $W_ITF_NAME
+}
+
+# Checks if current connection is working
+# Returns 0 on success, 1 otherwise
+function isConnectionWorking {
+    log "isConnectionWorking start"
     # Pings 3 times to check connection is working
     PING_TEST=$(ping -c3 "$SERVER" > /dev/null)
     if (( PING_TEST != 0 ))
     then
         log "Ping failed, connection is down"
-        return 2
+        return 1
     else
         log "Ping succeeded, connection is up"
         return 0
@@ -107,8 +114,8 @@ function connectToAp {
 # Controller here
 function run {
     log "run start"
-    CONNECTION_TEST=$(isConnectionWorking)
-    if (( CONNECTION_TEST == 0 ))
+    ITF_TEST=$(isItfUp)
+    if (( ITF_TEST == 0 ))
     then
         AP_TEST=$(isConnectedToAp)
         if (( AP_TEST == 0 ))
@@ -120,9 +127,10 @@ function run {
             AP_REACHABLE_TEST=$(isApReachable)
             if (( AP_REACHABLE_TEST == 0 ))
             then
+                connectToAp
+                isConnectionWorking
                 if (( RETRY > 0 ))
                 then
-                    connectToAp
                     (( RETRY-- ))
                     log "run restart"
                     run
