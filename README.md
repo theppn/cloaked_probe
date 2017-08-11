@@ -2,7 +2,7 @@
 Automation of nPerf test using CasperJS/PhantomJS
 
 ##Version
-1.1.0
+1.2.0
 
 ##Requirements
 - PhantomJS 1.9.1 or greater available as phantomjs command

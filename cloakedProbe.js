@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2017 Anh Bach Quoc - All Rights Reserved
  * Cloaked Probe - Automation of nPerf test using CasperJS/PhantomJS
- * Version 1.0.0
+ * Version 1.2.0
  * ¯\_(ツ)_/¯
  */
 
@@ -12,7 +12,7 @@
 var nPerfUrl = 'https://www.nperf.com/fr/'; // url of nPerf
 var username = ''; // your nPerf account username
 var password = ''; // your nPerf account password
-var maxLoop = 4*24*7; // number of tests to perform
+var maxLoop = 1; // number of tests to perform
 var intervalBetweenTest = 15*60; // waiting time between each test in sec
 var maxPageLoadingDuration = 2*60; // waiting time of page loading before timeout in sec
 var maxTestDuration = 3*60; // waiting time of test duration before timeout in sec
@@ -75,12 +75,12 @@ cloakedProbe.init = function(username, password, maxLoop, intervalBetweenTest, m
         loadPlugins: true,
         javascriptEnabled: true,
     });
-    cloakedProbe.account.username = username; //'aquoc@nomosphere.fr'
-    cloakedProbe.account.password = password; //'n0m0sphere@1234'
-    cloakedProbe.settings.maxLoop = maxLoop; // 10
-    cloakedProbe.settings.intervalBetweenTest = intervalBetweenTest*1000 // 3600*1000 (sec)
-    cloakedProbe.settings.maxPageLoadingDuration = maxPageLoadingDuration*1000 // 30*1000 (sec)
-    cloakedProbe.settings.maxTestDuration = maxTestDuration*1000; //90*1000 (sec)
+    cloakedProbe.account.username = username;
+    cloakedProbe.account.password = password;
+    cloakedProbe.settings.maxLoop = maxLoop;
+    cloakedProbe.settings.intervalBetweenTest = intervalBetweenTest*1000
+    cloakedProbe.settings.maxPageLoadingDuration = maxPageLoadingDuration*1000
+    cloakedProbe.settings.maxTestDuration = maxTestDuration*1000;
     cloakedProbe.log('cloakedProbe.init: ready');
 };
 
