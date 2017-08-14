@@ -1,4 +1,6 @@
 #!/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin$
+# Settings bel
 # Settings below
 # Path to log file
 LOG='/var/log/cloakedProbe.log'
@@ -45,7 +47,7 @@ function isItfUp {
     if (( TEST_ITF1 < 1 ))
     then
         log "Interface $W_ITF_NAME not found or down, attempt to turn it on"
-        ifconfig "$W_ITF_NAME" up
+        ifconfig $W_ITF_NAME up
         TEST_ITF2=$(ifconfig | grep -c "$W_ITF_NAME")
         if (( TEST_ITF2 < 1 ))
         then
