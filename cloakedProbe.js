@@ -34,10 +34,10 @@ var casper = null;
 cloakedProbe.log = function(msg){
     var now = new Date();
     var month = ((now.getMonth()+1).length < 2) ? "0" + now.getMonth() : "" + now.getMonth();
-    var day = ((now.getDate()) < 10) ? "0" + now.getDate() : "" + now.getDate();
-    var hours = ((now.getHours()) < 10) ? "0" + now.getHours() : "" + now.getHours();
-    var minutes = ((now.getMinutes()) < 10) ? "0" + now.getMinutes() : "" + now.getMinutes();
-    var seconds = ((now.getSeconds()) < 10) ? "0" + now.getSeconds() : "" + now.getSeconds();
+    var day = (now.getDate() < 10) ? "0" + now.getDate() : "" + now.getDate();
+    var hours = (now.getHours() < 10) ? "0" + now.getHours() : "" + now.getHours();
+    var minutes = (now.getMinutes() < 10) ? "0" + now.getMinutes() : "" + now.getMinutes();
+    var seconds = (now.getSeconds() < 10) ? "0" + now.getSeconds() : "" + now.getSeconds();
     var dateString = '[' + now.getFullYear() + '-' + month + '-' + day + ':' + hours + ':' + minutes + ':' + seconds + '] ';
     casper.echo(dateString + cloakedProbe.log.caller.name.toString() + ": " + msg);
 };
