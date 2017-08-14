@@ -88,27 +88,32 @@ cloakedProbe.init = function(username, password, maxPageLoadingDuration, maxTest
  *  Performs a single test and recursively loops if necessary
  */
 cloakedProbe.launchTest = function() {
-    cloakedProbe.log('cloakedProbe.launchTest: start');
-    // waiting for nPerf start button to be available
-    this.waitForSelector(cloakedProbe.buffer.targetStart, function() {
-        this.waitUntilVisible(cloakedProbe.buffer.targetStart, function() {
-            this.click(cloakedProbe.buffer.targetStart);
-            cloakedProbe.log('cloakedProbe.launchTest: test started');
-            // 2 sec temp as safety dance
-            this.wait(2000, function() {
-                this.waitUntilVisible(cloakedProbe.buffer.targetRestart, function() {
-                    cloakedProbe.log('cloakedProbe.launchTest: test ended');
-                }.bind(this), function() {
-                    cloakedProbe.log('cloakedProbe.launchTest: maxTestDuration reached, test took too long');
-                }, cloakedProbe.settings.maxTestDuration);
-            });
-        }, function() {
+    if (cloakedProbe.buffer.isLoggedIn) {
+        cloakedProbe.log('cloakedProbe.launchTest: start');
+        // waiting for nPerf start button to be available
+        this.waitForSelector(cloakedProbe.buffer.targetStart, function() {
+            this.waitUntilVisible(cloakedProbe.buffer.targetStart, function() {
+                this.click(cloakedProbe.buffer.targetStart);
+                cloakedProbe.log('cloakedProbe.launchTest: test started');
+                // 2 sec temp as safety dance
+                this.wait(2000, function() {
+                    this.waitUntilVisible(cloakedProbe.buffer.targetRestart, function() {
+                        cloakedProbe.log('cloakedProbe.launchTest: test ended');
+                    }.bind(this), function() {
+                        cloakedProbe.log('cloakedProbe.launchTest: maxTestDuration reached, test took too long');
+                    }, cloakedProbe.settings.maxTestDuration);
+                });
+            }, function() {
+                cloakedProbe.log("cloakedProbe.launchTest: maxPageLoadingDuration reached, can't find " + cloakedProbe.buffer.targetStart + ", timeout");
+            }, cloakedProbe.settings.maxPageLoadingDuration);
+        },
+        function() {
             cloakedProbe.log("cloakedProbe.launchTest: maxPageLoadingDuration reached, can't find " + cloakedProbe.buffer.targetStart + ", timeout");
         }, cloakedProbe.settings.maxPageLoadingDuration);
-    },
-    function() {
-        cloakedProbe.log("cloakedProbe.launchTest: maxPageLoadingDuration reached, can't find " + cloakedProbe.buffer.targetStart + ", timeout");
-    }, cloakedProbe.settings.maxPageLoadingDuration);
+    }
+    else {
+        cloakedProbe.log("cloakedProbe.launchTest: not logged in, not starting");
+    }
 };
 
 /**
@@ -144,42 +149,37 @@ cloakedProbe.logout = function() {
  *  Authenticates to account logging the test result
  */
 cloakedProbe.login = function() {
-    if (cloakedProbe.buffer.isLoggedIn) {
-        cloakedProbe.log('cloakedProbe.login: start');
-        // waiting for user menu button
-        this.waitForSelector('.borderR2', function () {
-            // js to load modal of user login form
+    cloakedProbe.log('cloakedProbe.login: start');
+    // waiting for user menu button
+    this.waitForSelector('.borderR2', function () {
+        // js to load modal of user login form
+        this.evaluate(function () {
+            ajaxModalUserLogin('fr', {}, 'reloadUserMenu();')
+        });
+        // waiting for username field
+        this.waitForSelector('input[name="identity"]', function () {
+            cloakedProbe.log('cloakedProbe.login: input[name="identity"] found');
+            this.fill('form[name="login_form"]', {
+                'identity': cloakedProbe.account.username,
+                'credential': cloakedProbe.account.password
+            }, false);
+            // js to request auth form submission
             this.evaluate(function () {
-                ajaxModalUserLogin('fr', {}, 'reloadUserMenu();')
+                nPerfModal.Login.authenticate(document.querySelector('.login-authenticate'));
             });
-            // waiting for username field
-            this.waitForSelector('input[name="identity"]', function () {
-                cloakedProbe.log('cloakedProbe.login: input[name="identity"] found');
-                this.fill('form[name="login_form"]', {
-                    'identity': cloakedProbe.account.username,
-                    'credential': cloakedProbe.account.password
-                }, false);
-                // js to request auth form submission
-                this.evaluate(function () {
-                    nPerfModal.Login.authenticate(document.querySelector('.login-authenticate'));
-                });
-                // waiting for notification post login attempt
-                this.waitForSelector('.notyfy_success', function () {
-                    cloakedProbe.buffer.isLoggedIn = true;
-                    cloakedProbe.log('cloakedProbe.login: auth success');
-                }, function () {
-                    cloakedProbe.log('cloakedProbe.login: auth failure');
-                }, cloakedProbe.settings.maxPageLoadingDuration);
+            // waiting for notification post login attempt
+            this.waitForSelector('.notyfy_success', function () {
+                cloakedProbe.buffer.isLoggedIn = true;
+                cloakedProbe.log('cloakedProbe.login: auth success');
             }, function () {
-                cloakedProbe.log('cloakedProbe.login: input[name="identity"] NOT found');
+                cloakedProbe.log('cloakedProbe.login: auth failure');
             }, cloakedProbe.settings.maxPageLoadingDuration);
         }, function () {
-            cloakedProbe.log('cloakedProbe.login: .toolBar.borderL2.borderR2 NOT found');
+            cloakedProbe.log('cloakedProbe.login: input[name="identity"] NOT found');
         }, cloakedProbe.settings.maxPageLoadingDuration);
-    }
-    else {
-        cloakedProbe.log('cloakedProbe.login: not logged in, not starting');
-    }
+    }, function () {
+        cloakedProbe.log('cloakedProbe.login: .toolBar.borderL2.borderR2 NOT found');
+    }, cloakedProbe.settings.maxPageLoadingDuration);
 };
 
 /**
