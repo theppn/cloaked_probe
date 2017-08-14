@@ -212,7 +212,7 @@ cloakedProbe.loadTest = function() {
  * @param {string} logLevel - CasperJS log level
  */
 cloakedProbe.run = function (nPerfUrl, username, password, maxPageLoadingDuration, maxTestDuration, verbose, logLevel) {
-    cloakedProbe.init(username, password, maxLoop, maxTestDuration, verbose, logLevel);
+    cloakedProbe.init(username, password, maxPageLoadingDuration, maxTestDuration, verbose, logLevel);
     casper.start(nPerfUrl);
     casper.then(cloakedProbe.logout);
     casper.then(cloakedProbe.login);
