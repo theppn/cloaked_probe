@@ -33,7 +33,7 @@ var casper = null;
  */
 cloakedProbe.log = function(msg){
     var now = new Date();
-    var month = ((now.getMonth()+1).length < 2) ? "0" + now.getMonth() : "" + now.getMonth();
+    var month = (now.getMonth() < 10) ? "0" + now.getMonth() : "" + now.getMonth();
     var day = (now.getDate() < 10) ? "0" + now.getDate() : "" + now.getDate();
     var hours = (now.getHours() < 10) ? "0" + now.getHours() : "" + now.getHours();
     var minutes = (now.getMinutes() < 10) ? "0" + now.getMinutes() : "" + now.getMinutes();
