@@ -17,20 +17,11 @@ Make sure client has the right date and time for accurate logging.
 
 ##How to use
 - Edit settings in cloakedProbe.js
+- Edit settings in wifi_reco.sh
+- Add task in cron using crontab -e, for instance:
 ```
-var nPerfUrl = 'https://www.nperf.com/fr/'; // url of nPerf
-var username = 'myusername'; // your nPerf account username
-var password = 'mypassword'; // your nPerf account password
-var maxLoop = 10; // number of tests to perform
-var intervalBetweenTest = 3600; // waiting time between each test in sec
-var maxPageLoadingDuration = 30; // waiting time of page loading before timeout in sec
-var maxTestDuration = 90; // waiting time of test duration before timeout in sec
-var verbose = true; // log verbosely
-var logLevel = 'debug'; // log level ie. debug, info, warning, error
-```
-- Run command
-```
-casperjs cloakedProbe.js >> cloakedProbe.log
+0,15,30,45 * * * * /root/cloaked_probe/wifi_reco.sh && /usr/bin/casperjs /root/cloaked_probe/cloakedProbe.js >> /var/log/cloakedProbe.log
+
 ```
 
 ##Additional notes
