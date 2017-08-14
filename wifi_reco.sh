@@ -122,15 +122,28 @@ function run {
         AP_TEST=$(isConnectedToAp)
         if (( AP_TEST < 1 ))
         then
-            log "run success"
-            exit 0
+            CONNECTION_TEST=$(isConnectionWorking)
+            if (( CONNECTION_TEST < 1 ))
+            then
+                log "run success"
+                exit 0
+            else
+                rerun
+            fi
         else
             AP_REACHABLE_TEST=$(isApReachable)
             if (( AP_REACHABLE_TEST < 1 ))
             then
                 connectToAp
-                isConnectionWorking
-                rerun
+                sleep 5
+                CONNECTION_TEST=$(isConnectionWorking)
+                if (( CONNECTION_TEST < 1 ))
+                then
+                    log "run success"
+                    exit 0
+                else
+                    rerun
+                fi
             else
                 rerun
             fi
