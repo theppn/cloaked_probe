@@ -21,7 +21,7 @@ RETRY=3
 # Logs with timestamp
 function log {
     DATE=$(date +%Y-%m-%d:%H:%M:%S)
-    echo "[$DATE]\\: $1" >> $LOG
+    echo "[$DATE] $1" >> $LOG
 }
 
 # Checks if AP is reachable

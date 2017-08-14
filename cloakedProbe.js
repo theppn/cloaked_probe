@@ -33,7 +33,13 @@ var casper = null;
  */
 cloakedProbe.log = function(msg){
     var now = new Date();
-    casper.echo("[" + now.toUTCString() + "] " + cloakedProbe.log.caller.name.toString() + ": " + msg);
+    var month = ((now.getMonth()+1).length < 2) ? "0" + now.getMonth() : "" + now.getMonth();
+    var day = ((now.getDate()).length < 2) ? "0" + now.getDate() : "" + now.getDate();
+    var hours = ((now.getHours()).length < 2) ? "0" + now.getHours() : "" + now.getHours();
+    var minutes = ((now.getMinutes()).length < 2) ? "0" + now.getMinutes() : "" + now.getMinutes();
+    var seconds = ((now.getSeconds()).length < 2) ? "0" + now.getSeconds() : "" + now.getSeconds();
+    var dateString = '[' + now.getFullYear() + '-' + month + '-' + day + ':' + hours + ':' + minutes + ':' + seconds + '] ';
+    casper.echo(dateString + cloakedProbe.log.caller.name.toString() + ": " + msg);
 };
 
 /**
