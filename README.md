@@ -36,13 +36,14 @@ If you don't know how to install them: http://docs.casperjs.org/en/latest/instal
 ##How to use
 This guide assumes that you are root, the working directory is "/root/cloaked_probe/", and log file is stored at "/var/log/cloakedProbe.log".
 - Clone repository using git or download and extract the archive in the directory.
-```
-$ cd /root
-$ git clone https://gitlab.com/aquoc/cloaked_probe.git
-$ cd /root/cloaked_probe
-```
+> cd /root
+
+> git clone https://gitlab.com/aquoc/cloaked_probe.git
+
+> cd /root/cloaked_probe
+
 - Edit settings in cloakedProbe.js. Replace xxx and yyy with your nPerf account credentials. You probably don't need to edit the other values.
-```
+```js
 var nPerfUrl = 'https://www.nperf.com/fr/'; // url of nPerf
 var username = 'xxx'; // your nPerf account username
 var password = 'yyy'; // your nPerf account password
@@ -52,7 +53,7 @@ var verbose = false; // log verbosely
 var logLevel = 'debug'; // log level ie. debug, info, warning, error
 ```
 - Edit settings in wifi_reco.sh. It is recommended to put RETRY=3 or more because your WiFi card may take a while to start and is likely to fail the test several times before going up.
-```
+```sh
 # Settings below
 # Path to log file
 LOG='/var/log/cloakedProbe.log'
@@ -70,19 +71,15 @@ AP_PWD=''
 RETRY=3
 ```
 - You may need to create log file if it does not exists and give write access
-```
-$ touch /var/log/cloakedProbe.log
-$ chmod 755 /var/log/cloakedProbe.log
-```
-- Launch cron as root
-```
-$ crontab -e
-```
-- Add task at the end of the file, for instance for a test every 15 minutes:
-```
-0,15,30,45 * * * * /root/cloaked_probe/wifi_reco.sh && /usr/bin/casperjs /root/cloaked_probe/cloakedProbe.js >> /var/log/cloakedProbe.log
+> touch /var/log/cloakedProbe.log
 
-```
+> chmod 755 /var/log/cloakedProbe.log
+
+- Launch cron as root
+> crontab -e
+
+- Add task at the end of the file, for instance for a test every 15 minutes:
+> 0,15,30,45 * * * * /root/cloaked_probe/wifi_reco.sh && /usr/bin/casperjs /root/cloaked_probe/cloakedProbe.js >> /var/log/cloakedProbe.log
 
 ##Additional notes
 ###Nice things to know about WiFi Reconnect script
