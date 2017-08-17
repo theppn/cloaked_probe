@@ -12,9 +12,9 @@
 var nPerfUrl = 'https://www.nperf.com/fr/'; // url of nPerf
 var username = ''; // your nPerf account username
 var password = ''; // your nPerf account password
-var maxPageLoadingDuration = 5; // waiting time of page loading before timeout in minutes
+var maxPageLoadingDuration = 2; // waiting time of page loading before timeout in minutes
 var maxTestDuration = 10; // waiting time of test duration before timeout in minutes
-var verbose = true; // log verbosely
+var verbose = false; // log verbosely
 var logLevel = 'debug'; // log level ie. debug, info, warning, error
 
 /**
@@ -39,7 +39,7 @@ cloakedProbe.log = function(msg){
     var minutes = (now.getMinutes() < 10) ? "0" + now.getMinutes() : "" + now.getMinutes();
     var seconds = (now.getSeconds() < 10) ? "0" + now.getSeconds() : "" + now.getSeconds();
     var dateString = '[' + now.getFullYear() + '-' + month + '-' + day + ':' + hours + ':' + minutes + ':' + seconds + '] ';
-    casper.echo(dateString + cloakedProbe.log.caller.name.toString() + ": " + msg);
+    casper.echo(dateString + cloakedProbe.log.caller.name.toString() + " " + msg);
 };
 
 /**
