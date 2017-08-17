@@ -1,15 +1,15 @@
-#Cloaked Probe
+# Cloaked Probe
 Automation of nPerf test using CasperJS/PhantomJS
 
-##Version
+## Version
 1.2.0
 
-##Description
+## Description
 This is a set of tools meant to help you set up a system which will automatically connect to a WiFi access point and test its Internet bandwidth using nPerf website.
 
 It is designed to run on a nBox but it can work on anything running Linux, including a Raspberry Pi for instance.
 
-##Requirements
+## Requirements
 For cloakedProbe:
 - PhantomJS 1.9.1 or greater available as phantomjs command
 - Python 2.6 or greater for casperjs in the bin/ directory
@@ -33,7 +33,7 @@ Make sure client has the right date and time for accurate logging. You are very 
 If you don't know how to install them: http://docs.casperjs.org/en/latest/installation.html
 
 
-##How to use
+## How to use
 This guide assumes that you are root, the working directory is "/root/cloaked_probe/", and log file is stored at "/var/log/cloakedProbe.log".
 - Clone repository using git or download and extract the archive in the directory.
 > cd /root
@@ -81,9 +81,9 @@ RETRY=3
 - Add task at the end of the file, for instance for a test every 15 minutes:
 > 0,15,30,45 * * * * /root/cloaked_probe/wifi_reco.sh && /usr/bin/casperjs /root/cloaked_probe/cloakedProbe.js >> /var/log/cloakedProbe.log
 
-##Additional notes
-###Nice things to know about WiFi Reconnect script
+## Additional notes
+### Nice things to know about WiFi Reconnect script
 - WiFi Reconnect script exits with code 0 on success and code 1 on failure.
 
-###Random knowledge
+### Random knowledge
 Did you know that in Javascript, parseInt(null,24) returns 23? ¯\_(ツ)_/¯
