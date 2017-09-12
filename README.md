@@ -2,7 +2,7 @@
 Automation of nPerf test using CasperJS/PhantomJS
 
 ## Version
-1.2.0
+1.3.0
 
 ## Description
 This is a set of tools meant to help you set up a system which will automatically connect to a WiFi access point and test its Internet bandwidth using nPerf website.

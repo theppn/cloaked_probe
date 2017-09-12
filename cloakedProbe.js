@@ -1,7 +1,7 @@
 /**
  * Copyright (C) 2017 Anh Bach Quoc - All Rights Reserved
  * Cloaked Probe - Automation of nPerf test using CasperJS/PhantomJS
- * Version 1.2.0
+ * Version 1.3.0
  * ¯\_(ツ)_/¯
  */
 
