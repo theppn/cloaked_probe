@@ -22,6 +22,7 @@ var logLevel = 'debug'; // log level ie. debug, info, warning, error
  */
 var cloakedProbe = {};
 var casper = null;
+var fs;
 
 /**
  *  Scripts and methods below
@@ -51,6 +52,34 @@ cloakedProbe.checkContent = function() {
 };
 
 /**
+ * Saves cookie data
+ */
+
+cloakedProbe.saveCookie = function() {
+    cloakedProbe.log('cloakedProbe.saveCookie: start');
+    var cookies = JSON.stringify(phantom.cookies);
+    fs.write("cloakedCookie", cookies, 'w');
+}
+
+/**
+ * Loads cookie data
+ */
+cloakedProbe.loadCookie = function() {
+    cloakedProbe.log('cloakedProbe.loadCookie: start');
+    try {
+        var data = fs.read("cloakedCookie");
+        if (data) {
+            phantom.cookies = JSON.parse(data);
+            cloakedProbe.buffer.hasCookie = true;
+            cloakedProbe.log('cloakedProbe.loadCookie: cookie found and loaded');
+        }
+    }
+    catch(e) {
+        cloakedProbe.log('cloakedProbe.loadCookie: no cookie found, nothing to load');
+    }
+}
+
+/**
  *  Inits configuration
  *  @param {string} username - username of nPerf account
  *  @param {string} password - password of nPerf account
@@ -69,6 +98,7 @@ cloakedProbe.init = function(username, password, maxPageLoadingDuration, maxTest
     cloakedProbe.buffer.loaderUpload = ".loader.upload";
     cloakedProbe.buffer.loaderLatency = ".loader.latency";
     cloakedProbe.buffer.isLoggedIn = false;
+    cloakedProbe.buffer.hasCookie = false;
     cloakedProbe.account = {}; // variables related to account
     cloakedProbe.settings = {}; // variables related to settings
 
@@ -80,6 +110,8 @@ cloakedProbe.init = function(username, password, maxPageLoadingDuration, maxTest
         loadPlugins: true,
         javascriptEnabled: true,
     });
+    fs = require('fs');
+    cloakedProbe.loadCookie();
     cloakedProbe.account.username = username;
     cloakedProbe.account.password = password;
     cloakedProbe.settings.maxPageLoadingDuration = maxPageLoadingDuration*1000*60;
@@ -140,24 +172,29 @@ cloakedProbe.logout = function() {
         // if currently logged in, attempt to logout
         if (this.exists('.userIdentity')) {
             cloakedProbe.buffer.isLoggedIn = true;
-            cloakedProbe.log('cloakedProbe.logout: currently logged in, attempt to logout');
-            var repeatedAction = setInterval(function() {
-                this.evaluate(function () {
-                    userLogout();
-                });
-            }.bind(this), 5000);
-            this.waitForSelector('.notyfy_success', function () {
-                clearInterval(repeatedAction);
-                cloakedProbe.buffer.isLoggedIn = false;
-                cloakedProbe.log('cloakedProbe.logout: logout success');
-            }, function () {
-                clearInterval(repeatedAction);
-                cloakedProbe.log('cloakedProbe.logout: logout failure');
-            }, cloakedProbe.settings.maxPageLoadingDuration);
+            if (cloakedProbe.buffer.hasCookie) {
+                cloakedProbe.log('cloakedProbe.logout: currently logged in + cookie loaded, no logout needed');
+            }
+            else {
+                cloakedProbe.log('cloakedProbe.logout: currently logged in + no cookie, attempt to logout');
+                var repeatedAction = setInterval(function() {
+                    this.evaluate(function () {
+                        userLogout();
+                    });
+                }.bind(this), 5000);
+                this.waitForSelector('.notyfy_success', function () {
+                    clearInterval(repeatedAction);
+                    cloakedProbe.buffer.isLoggedIn = false;
+                    cloakedProbe.log('cloakedProbe.logout: logout success');
+                }, function () {
+                    clearInterval(repeatedAction);
+                    cloakedProbe.log('cloakedProbe.logout: logout failure');
+                }, cloakedProbe.settings.maxPageLoadingDuration);
+            }
         }
         else {
             cloakedProbe.buffer.isLoggedIn = false;
-            cloakedProbe.log('cloakedProbe.logout: not logged in, skip');
+            cloakedProbe.log('cloakedProbe.logout: not logged in, skip logout');
         }
     }, function() {
         cloakedProbe.log('cloakedProbe.logout: #userMenu not found');
@@ -169,38 +206,44 @@ cloakedProbe.logout = function() {
  */
 cloakedProbe.login = function() {
     cloakedProbe.log('cloakedProbe.login: start');
-    var repeatedAction = setInterval(function() {
-        this.evaluate(function () {
-            ajaxModalUserLogin('fr', {}, 'reloadUserMenu();')
-        });
-    }.bind(this), 5000);
-    // waiting for username field
-    this.waitForSelector('input[name="identity"]', function () {
-        clearInterval(repeatedAction);
-        cloakedProbe.log('cloakedProbe.login: input[name="identity"] found');
-        this.fill('form[name="login_form"]', {
-            'identity': cloakedProbe.account.username,
-            'credential': cloakedProbe.account.password
-        }, false);
-        // js to request auth form submission
-        var repeatedAction2 = setInterval(function() {
+    if (cloakedProbe.buffer.isLoggedIn) {
+        cloakedProbe.log('cloakedProbe.login: already logged in, skipping login');
+    }
+    else {
+        var repeatedAction = setInterval(function() {
             this.evaluate(function () {
-                nPerfModal.Login.authenticate(document.querySelector('.login-authenticate'));
+                ajaxModalUserLogin('fr', {}, 'reloadUserMenu();')
             });
         }.bind(this), 5000);
-        // waiting for notification post login attempt
-        this.waitForSelector('.notyfy_success', function () {
-            clearInterval(repeatedAction2);
-            cloakedProbe.buffer.isLoggedIn = true;
-            cloakedProbe.log('cloakedProbe.login: auth success');
+        // waiting for username field
+        this.waitForSelector('input[name="identity"]', function () {
+            clearInterval(repeatedAction);
+            cloakedProbe.log('cloakedProbe.login: input[name="identity"] found');
+            this.fill('form[name="login_form"]', {
+                'identity': cloakedProbe.account.username,
+                'credential': cloakedProbe.account.password
+            }, false);
+            // js to request auth form submission
+            var repeatedAction2 = setInterval(function() {
+                this.evaluate(function () {
+                    nPerfModal.Login.authenticate(document.querySelector('.login-authenticate'));
+                });
+            }.bind(this), 5000);
+            // waiting for notification post login attempt
+            this.waitForSelector('.notyfy_success', function () {
+                clearInterval(repeatedAction2);
+                cloakedProbe.buffer.isLoggedIn = true;
+                cloakedProbe.log('cloakedProbe.login: auth success');
+                cloakedProbe.saveCookie();
+            }, function () {
+                clearInterval(repeatedAction2);
+                cloakedProbe.log('cloakedProbe.login: auth failure');
+            }, cloakedProbe.settings.maxPageLoadingDuration);
         }, function () {
-            clearInterval(repeatedAction2);
-            cloakedProbe.log('cloakedProbe.login: auth failure');
+            clearInterval(repeatedAction);
+            cloakedProbe.log('cloakedProbe.login: input[name="identity"] NOT found');
         }, cloakedProbe.settings.maxPageLoadingDuration);
-    }, function () {
-        clearInterval(repeatedAction);
-        cloakedProbe.log('cloakedProbe.login: input[name="identity"] NOT found');
-    }, cloakedProbe.settings.maxPageLoadingDuration);
+    }
 };
 
 /**
